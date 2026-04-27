@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YachtWay for the CYBA Board</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --black: #000000;
+        --ink: #1A1A1A;
+        --body: #2D2D2D;
+        --body-mute: #595959;
+        --muted: #8C8C8C;
+        --border: #DCDCDC;
+        --paper: #F5F5F5;
+        --lighter: #FAFAFA;
+        --white: #FFFFFF;
+        --off-white: #EEEEEE;
+        --font-head: 'Poppins', system-ui, sans-serif;
+        --font-body: 'Figtree', system-ui, sans-serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: var(--font-body); color: var(--ink); -webkit-font-smoothing: antialiased; }
+      .deck { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
+      .slide-frame { width: min(100vw, 177.78vh); aspect-ratio: 16 / 9; position: relative; background: var(--white); container-type: size; overflow: hidden; }
+      .slide { position: absolute; inset: 0; display: none; flex-direction: column; padding: 4cqw 5cqw; }
+      .slide.active { display: flex; }
+      .slide.dark { background: var(--ink); color: var(--white); }
+      .eyebrow { font-size: 1.1cqw; font-weight: 700; letter-spacing: 0.4em; text-transform: uppercase; color: var(--ink); }
+      .dark .eyebrow { color: var(--white); }
+      .thin-rule { height: 1px; background: var(--border); margin: 0.6cqw 0 1.5cqw; }
+      .dark .thin-rule { background: var(--muted); }
+      .h1 { font-family: var(--font-head); font-size: 3.5cqw; font-weight: 700; line-height: 1.1; color: var(--ink); }
+      .dark .h1 { color: var(--white); }
+      .h2 { font-family: var(--font-head); font-size: 2.6cqw; font-weight: 700; line-height: 1.15; }
+      .h3 { font-family: var(--font-head); font-size: 1.9cqw; font-weight: 700; line-height: 1.2; }
+      .body-text { font-size: 1.4cqw; line-height: 1.4; color: var(--body); }
+      .dark .body-text { color: var(--off-white); }
+      .muted-text { font-size: 1.3cqw; line-height: 1.4; color: var(--body-mute); }
+      .dark .muted-text { color: var(--muted); }
+      .italic { font-style: italic; }
+      .bold { font-weight: 700; }
+      .center { text-align: center; }
+      .brand-mark { position: absolute; bottom: 2cqw; left: 5cqw; font-size: 0.85cqw; font-weight: 700; letter-spacing: 0.6em; color: var(--body-mute); }
+      .dark .brand-mark { color: var(--muted); }
+      .page-number { position: absolute; bottom: 2cqw; right: 5cqw; font-size: 0.85cqw; color: var(--body-mute); letter-spacing: 0.05em; }
+      .dark .page-number { color: var(--muted); }
+      .spacer { flex: 1; }
+
+      /* Cover */
+      .cover { background: var(--ink); color: var(--white); padding: 3cqw 5cqw; }
+      .cover .yw-mark { font-size: 1cqw; font-weight: 700; letter-spacing: 0.7em; color: var(--white); }
+      .cover .preparation { font-size: 1.1cqw; font-weight: 700; letter-spacing: 0.5em; color: var(--muted); margin-top: 12cqw; }
+      .cover .headline { font-family: var(--font-head); font-size: 4.5cqw; font-weight: 700; line-height: 1.05; color: var(--white); margin-top: 1.2cqw; }
+      .cover .subhead { font-family: var(--font-head); font-size: 2.3cqw; font-weight: 400; font-style: italic; line-height: 1.2; color: var(--off-white); margin-top: 1.5cqw; }
+      .cover .footer-line { font-size: 0.95cqw; color: var(--muted); position: absolute; bottom: 2cqw; left: 5cqw; }
+
+      /* Pull quote inverted block */
+      .pull-quote { background: var(--ink); color: var(--white); padding: 2.2cqw 2.5cqw; }
+      .pull-quote .pq-line-1 { font-family: var(--font-head); font-size: 2cqw; font-weight: 700; line-height: 1.2; }
+      .pull-quote .pq-line-2 { font-family: var(--font-head); font-size: 1.7cqw; line-height: 1.25; color: var(--off-white); margin-top: 0.8cqw; }
+      .pull-quote .pq-line-3 { font-family: var(--font-head); font-size: 2.1cqw; font-weight: 700; font-style: italic; line-height: 1.25; margin-top: 0.5cqw; }
+
+      /* Cards */
+      .card { background: var(--paper); padding: 1.8cqw; display: flex; flex-direction: column; gap: 0.6cqw; }
+      .card.dark { background: var(--ink); color: var(--white); }
+      .card.outlined { background: var(--white); border: 1px solid var(--border); }
+      .card .card-eyebrow { font-size: 1cqw; font-weight: 700; letter-spacing: 0.4em; text-transform: uppercase; color: var(--body-mute); }
+      .card.dark .card-eyebrow { color: var(--muted); }
+      .card-headline { font-family: var(--font-head); font-size: 1.8cqw; font-weight: 700; line-height: 1.2; color: var(--ink); }
+      .card.dark .card-headline { color: var(--white); }
+      .card-body { font-size: 1.2cqw; line-height: 1.4; color: var(--body); }
+      .card.dark .card-body { color: var(--off-white); }
+      .card-quote { font-family: var(--font-head); font-size: 1.6cqw; font-weight: 700; font-style: italic; }
+
+      .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2cqw; flex: 1; }
+      .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1cqw; flex: 1; }
+      .cols-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8cqw; flex: 1; }
+      .cols-50-50 { display: grid; grid-template-columns: 1fr 1fr; gap: 1cqw; flex: 1; }
+
+      /* Stats */
+      .stat-tile { display: flex; flex-direction: column; justify-content: center; padding: 1.5cqw; }
+      .stat-tile.paper { background: var(--paper); }
+      .stat-tile.dark { background: var(--ink); color: var(--white); }
+      .stat-tile .number { font-family: var(--font-head); font-size: 4.5cqw; font-weight: 700; line-height: 1; color: var(--ink); }
+      .stat-tile.dark .number { color: var(--white); }
+      .stat-tile .label { font-size: 1cqw; line-height: 1.3; color: var(--body); margin-top: 0.8cqw; }
+      .stat-tile.dark .label { color: var(--off-white); }
+
+      /* Bar chart on slide 15 */
+      .bar-chart { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1cqw; align-items: end; height: 100%; padding: 0.5cqw; }
+      .bar { display: flex; flex-direction: column; justify-content: end; align-items: center; height: 100%; }
+      .bar-fill { width: 100%; background: var(--ink); position: relative; }
+      .bar-value { font-family: var(--font-head); font-size: 0.85cqw; font-weight: 700; color: var(--ink); position: absolute; top: -1.4cqw; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+      .bar-label { font-size: 0.95cqw; color: var(--body-mute); margin-top: 0.4cqw; }
+
+      /* Earnings table */
+      .earnings { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
+      .earnings th { background: var(--ink); color: var(--white); padding: 0.9cqw 1cqw; text-align: left; font-size: 0.95cqw; font-weight: 700; letter-spacing: 0.2em; }
+      .earnings td { padding: 0.9cqw 1cqw; font-size: 1.1cqw; border-bottom: 1px solid var(--border); }
+      .earnings tr:nth-child(even) td { background: var(--paper); }
+      .earnings .col-loan, .earnings .col-ref { font-weight: 700; }
+
+      /* Numbered rows on slide 10 */
+      .numbered-row { background: var(--paper); padding: 1cqw 1.5cqw; display: grid; grid-template-columns: 2.5cqw 1fr; gap: 1cqw; align-items: center; margin-bottom: 0.6cqw; }
+      .row-num { width: 2.2cqw; height: 2.2cqw; border-radius: 50%; background: var(--ink); color: var(--white); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-size: 1.3cqw; font-weight: 700; }
+      .row-content .row-h { font-family: var(--font-head); font-size: 1.35cqw; font-weight: 700; color: var(--ink); margin-bottom: 0.2cqw; }
+      .row-content .row-b { font-size: 1.1cqw; line-height: 1.35; color: var(--body); }
+
+      /* Coverage range band slide 8 */
+      .coverage-band { background: var(--ink); color: var(--white); padding: 1.4cqw 2cqw; }
+      .coverage-band .cb-eyebrow { font-size: 0.95cqw; font-weight: 700; letter-spacing: 0.4em; color: var(--muted); margin-bottom: 0.5cqw; }
+      .coverage-band .cb-range { display: flex; align-items: center; gap: 1.5cqw; }
+      .coverage-band .cb-num { font-family: var(--font-head); font-size: 3.5cqw; font-weight: 700; color: var(--white); line-height: 1; }
+      .coverage-band .cb-num.italic { font-style: italic; }
+      .coverage-band .cb-arrow { font-size: 2.5cqw; color: var(--muted); }
+      .coverage-band .cb-cap { font-size: 1cqw; font-style: italic; color: var(--muted); margin-top: 0.4cqw; }
+
+      /* Big stat duo (slide 14) */
+      .big-duo { background: var(--ink); color: var(--white); display: grid; grid-template-columns: 1fr auto 1fr; gap: 1cqw; padding: 2cqw 2.5cqw; flex: 1; align-items: center; }
+      .big-duo .big-num { font-family: var(--font-head); font-size: 7cqw; font-weight: 700; line-height: 1; color: var(--white); }
+      .big-duo .big-num.italic { font-style: italic; }
+      .big-duo .big-arrow { font-size: 3cqw; color: var(--muted); align-self: center; }
+      .big-duo .big-cap { font-size: 1cqw; color: var(--off-white); margin-top: 0.6cqw; }
+      .big-duo .big-cap.muted { color: var(--muted); font-style: italic; margin-top: 0.4cqw; }
+
+      /* Closing band */
+      .closing-band { background: var(--ink); color: var(--white); padding: 1cqw 2cqw; text-align: center; font-family: var(--font-head); font-size: 1.5cqw; font-weight: 700; }
+      .closing-band.italic { font-style: italic; font-weight: 400; }
+
+      /* Step cards (slide 22) */
+      .step-card { background: var(--black); color: var(--white); padding: 1.8cqw; display: flex; flex-direction: column; gap: 0.6cqw; border-top: 1px solid var(--muted); border-bottom: 1px solid var(--muted); }
+      .step-num { width: 2.5cqw; height: 2.5cqw; border-radius: 50%; background: var(--white); color: var(--ink); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-size: 1.5cqw; font-weight: 700; margin-bottom: 0.4cqw; }
+      .step-card .step-h { font-family: var(--font-head); font-size: 1.2cqw; font-weight: 700; }
+      .step-card .step-b { font-size: 0.95cqw; line-height: 1.4; color: var(--off-white); }
+
+      /* LIVE stats with rules */
+      .live-stat { padding: 1cqw 0; border-top: 1px solid var(--muted); }
+      .live-stat:last-child { border-bottom: 1px solid var(--muted); }
+      .live-stat .ls-num { font-family: var(--font-head); font-size: 3.2cqw; font-weight: 700; color: var(--white); line-height: 1; }
+      .live-stat .ls-label { font-size: 0.95cqw; color: var(--off-white); margin-top: 0.4cqw; line-height: 1.3; }
+
+      /* Quote slide 19 */
+      .quote-block { background: var(--paper); padding: 2.5cqw; border-left: 3px solid var(--ink); flex: 1; display: flex; flex-direction: column; gap: 1.5cqw; position: relative; }
+      .quote-glyph { font-family: var(--font-head); font-size: 7cqw; font-weight: 700; line-height: 0.5; color: var(--ink); }
+      .quote-text { font-family: var(--font-head); font-size: 1.7cqw; font-style: italic; line-height: 1.3; color: var(--body-mute); padding-left: 0.5cqw; }
+      .quote-attr { font-size: 1.1cqw; font-weight: 700; color: var(--body-mute); padding-left: 0.5cqw; margin-top: auto; }
+      .placeholder-note { text-align: center; font-size: 0.9cqw; font-style: italic; letter-spacing: 0.2em; color: var(--ink); margin-top: 1cqw; }
+
+      /* Italics card slide 4 bottom */
+      .uber-block { background: var(--ink); color: var(--white); padding: 2cqw 2.5cqw; display: flex; gap: 1.5cqw; align-items: flex-start; }
+      .uber-glyph { font-family: var(--font-head); font-size: 5cqw; font-weight: 700; line-height: 0.7; color: var(--white); }
+      .uber-content { flex: 1; }
+      .uber-l1 { font-family: var(--font-head); font-size: 2cqw; font-weight: 700; line-height: 1.15; color: var(--white); }
+      .uber-l2 { font-family: var(--font-head); font-size: 2cqw; font-weight: 700; font-style: italic; line-height: 1.15; color: var(--white); margin-top: 0.5cqw; }
+      .uber-l3 { font-size: 1.1cqw; color: var(--muted); margin-top: 1cqw; }
+
+      /* Silent killer specific */
+      .silent-killer { padding: 4cqw 5cqw; }
+      .silent-killer .h-killer { font-family: var(--font-head); font-size: 5.5cqw; font-weight: 700; color: var(--white); margin: 1cqw 0 2cqw; }
+      .silent-killer .stack { display: flex; flex-direction: column; gap: 0.5cqw; }
+      .silent-killer .stack-line { font-size: 1.7cqw; color: var(--off-white); line-height: 1.4; }
+      .silent-killer .quote-band { background: var(--black); padding: 1.5cqw 2cqw; margin-top: 2cqw; border-top: 1px solid var(--muted); border-bottom: 1px solid var(--muted); font-family: var(--font-head); font-size: 1.4cqw; font-style: italic; line-height: 1.4; color: var(--white); }
+
+      /* Trust certs */
+      .cert-card { background: var(--white); border: 1px solid var(--border); border-top: 3px solid var(--ink); padding: 1.5cqw; flex: 1; display: flex; flex-direction: column; gap: 1cqw; }
+      .cert-card .cert-tag { font-family: var(--font-head); font-size: 3.5cqw; font-weight: 700; color: var(--ink); line-height: 1; }
+      .cert-card .cert-body { font-size: 1.05cqw; line-height: 1.4; color: var(--body); }
+
+      /* Field cards (slide 21) */
+      .field-card { background: var(--paper); padding: 1cqw 1.3cqw; display: flex; flex-direction: column; gap: 0.4cqw; }
+      .field-card .fc-eyebrow { font-size: 0.95cqw; font-weight: 700; letter-spacing: 0.4em; text-transform: uppercase; color: var(--body-mute); }
+      .field-card .fc-body { font-size: 1.1cqw; line-height: 1.35; color: var(--body); }
+      .yw-dominant { background: var(--ink); color: var(--white); padding: 2cqw; display: flex; flex-direction: column; gap: 1cqw; }
+      .yw-dominant .yw-eyebrow { font-size: 1.1cqw; font-weight: 700; letter-spacing: 0.5em; color: var(--muted); }
+      .yw-dominant .yw-line { font-family: var(--font-head); font-size: 2.3cqw; font-weight: 700; line-height: 1.1; color: var(--white); }
+      .yw-dominant .yw-cap { font-size: 1.1cqw; font-style: italic; line-height: 1.4; color: var(--off-white); margin-top: auto; padding-top: 0.5cqw; }
+
+      /* Wells Fargo + Italy splits */
+      .split-light { background: var(--paper); padding: 1.8cqw; display: flex; flex-direction: column; gap: 1cqw; }
+      .split-dark { background: var(--ink); color: var(--white); padding: 1.8cqw; display: flex; flex-direction: column; gap: 1cqw; }
+      .split-eyebrow { font-size: 0.95cqw; font-weight: 700; letter-spacing: 0.4em; text-transform: uppercase; color: var(--body-mute); }
+      .split-dark .split-eyebrow { color: var(--muted); }
+      .split-h { font-family: var(--font-head); font-size: 1.5cqw; font-weight: 700; line-height: 1.25; color: var(--ink); }
+      .split-dark .split-h { color: var(--white); }
+      .split-b { font-size: 1.1cqw; line-height: 1.4; color: var(--body); }
+      .split-dark .split-b { color: var(--off-white); }
+      .steps-list { display: flex; flex-direction: column; gap: 0.6cqw; }
+      .step-item { display: grid; grid-template-columns: auto 1fr; gap: 0.8cqw; font-size: 1.1cqw; line-height: 1.4; }
+      .step-item .step-tag { font-weight: 700; color: var(--ink); }
+      .split-footer { font-size: 0.95cqw; font-style: italic; color: var(--muted); padding-top: 0.5cqw; border-top: 1px solid var(--muted); }
+
+      /* Four ways grid */
+      .four-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 0.8cqw; flex: 1; }
+      .four-card { background: var(--paper); padding: 1.3cqw 1.5cqw; border-left: 3px solid var(--ink); display: flex; flex-direction: column; gap: 0.4cqw; }
+      .four-card .fc-num { font-family: var(--font-head); font-size: 2.2cqw; font-weight: 700; color: var(--ink); line-height: 1; }
+      .four-card .fc-h { font-family: var(--font-head); font-size: 1.4cqw; font-weight: 700; color: var(--ink); }
+      .four-card .fc-b { font-size: 1cqw; line-height: 1.35; color: var(--body); }
+
+      /* Curation tiles */
+      .curation-tile { padding: 1.5cqw 1.5cqw 2cqw; display: flex; flex-direction: column; justify-content: space-between; }
+      .curation-tile .ct-num { font-family: var(--font-head); font-size: 5cqw; font-weight: 700; line-height: 1; }
+      .curation-tile .ct-label { font-size: 1.05cqw; line-height: 1.3; margin-top: 1cqw; }
+      .curation-tile.paper { background: var(--paper); color: var(--ink); }
+      .curation-tile.dark { background: var(--ink); color: var(--white); }
+      .curation-tile.dark .ct-label { color: var(--off-white); }
+      .curation-closer { text-align: center; font-style: italic; font-size: 1.05cqw; color: var(--body); padding: 1.5cqw 4cqw 0; line-height: 1.4; }
+
+      /* Founder layout */
+      .founder-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5cqw; flex: 1; }
+      .founder-narrative p { font-size: 1.1cqw; line-height: 1.5; color: var(--body); margin-bottom: 0.8cqw; }
+      .founder-stats { display: flex; flex-direction: column; }
+      .founder-stat { padding: 1cqw 0; display: grid; grid-template-columns: auto 1fr; gap: 1.5cqw; align-items: center; border-top: 1px solid var(--border); }
+      .founder-stat:first-child { border-top: none; }
+      .founder-stat .fs-n { font-family: var(--font-head); font-size: 2.1cqw; font-weight: 700; color: var(--ink); line-height: 1; min-width: 5cqw; }
+      .founder-stat .fs-l { font-size: 0.9cqw; line-height: 1.3; color: var(--body-mute); }
+      .founder-signature { font-style: italic; font-size: 1.1cqw; color: var(--ink); margin-top: 1cqw; }
+
+      /* Vision split */
+      .vision-top { padding-bottom: 1.5cqw; }
+
+      /* Controls */
+      .controls { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 18px; background: rgba(0,0,0,0.7); color: white; padding: 8px 18px; border-radius: 999px; font-family: var(--font-body); font-size: 13px; z-index: 100; backdrop-filter: blur(8px); }
+      .controls button { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0 6px; line-height: 1; opacity: 0.8; }
+      .controls button:hover { opacity: 1; }
+      .controls .counter { font-weight: 600; letter-spacing: 0.1em; min-width: 60px; text-align: center; }
+
+      @media print {
+        .controls { display: none; }
+        html, body, .deck { width: auto; height: auto; overflow: visible; background: white; }
+        .slide-frame { width: 100%; max-width: none; aspect-ratio: 16/9; }
+        .slide { display: flex !important; position: relative; inset: auto; page-break-after: always; page-break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+      <div class="slide-frame">
+        <!-- SLIDE 1: Cover -->
+        <section class="slide cover dark active">
+          <div class="yw-mark">YACHTWAY</div>
+          <div class="preparation">PREPARED FOR THE CYBA BOARD</div>
+          <h1 class="headline">
+            You do not need<br />another listing platform.
+          </h1>
+          <h2 class="subhead">
+            And you should never be paying to advertise your inventory.
+          </h2>
+          <div class="footer-line">YachtWay.com | Miami | April 2026</div>
+        </section>
+
+        <!-- SLIDE 2: The decision -->
+        <section class="slide">
+          <div class="eyebrow">THE DECISION</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">
+            Every legacy platform charges your members to list their own boats.
+          </h1>
+          <p class="body-text" style="margin-top:1.2cqw;">
+            Then charges them again to feature them. Then again to retarget.
+            Then raises the price every year. The model is older than the
+            internet. Auctioneers used to do it.
+          </p>
+          <div class="spacer"></div>
+          <div class="pull-quote">
+            <div class="pq-line-1">
+              YachtWay is asking this board a different question.
+            </div>
+            <div class="pq-line-2">
+              Not which platform charges your members the least.
+            </div>
+            <div class="pq-line-3">Which model charges them nothing.</div>
+          </div>
+          <p
+            class="muted-text italic"
+            style="margin-top:1cqw; font-size:0.95cqw;"
+          >
+            That is a different conversation. This deck is that conversation.
+          </p>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">02 / 23</div>
+        </section>
+
+        <!-- SLIDE 3: Founder -->
+        <section class="slide">
+          <div class="eyebrow">FOUNDER</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">I came in as a boat owner.</h1>
+          <div class="founder-grid" style="margin-top:1.5cqw;">
+            <div class="founder-narrative">
+              <p>
+                Before buying my first vessel, I watched every yachting video I
+                could find. Most were technical, dry, and impossible for
+                newcomers. So I picked up a camera and made my own.
+              </p>
+              <p>
+                Over three years, half a million people watched. Buyers started
+                calling shipyards asking to talk to me. That led to brand
+                ambassadorship and 250,000,000 dollars in assisted yacht sales.
+              </p>
+              <p>
+                I do not sell boats anymore. I met my co-founder, Anh, in a
+                Silicon Valley hacker house in 2014. We have been building
+                YachtWay since. Three million dollars of my own capital is in
+                this platform.
+              </p>
+            </div>
+            <div class="founder-stats">
+              <div class="founder-stat">
+                <div class="fs-n">500K+</div>
+                <div class="fs-l">
+                  People who watched my self-made yacht videos before YachtWay
+                  existed.
+                </div>
+              </div>
+              <div class="founder-stat">
+                <div class="fs-n">$250M</div>
+                <div class="fs-l">
+                  In assisted yacht sales as a brand ambassador for a single
+                  shipyard.
+                </div>
+              </div>
+              <div class="founder-stat">
+                <div class="fs-n">$3M</div>
+                <div class="fs-l">
+                  Of my own capital invested before institutional money.
+                </div>
+              </div>
+              <div class="founder-stat">
+                <div class="fs-n">1.8M</div>
+                <div class="fs-l">
+                  Followers consuming YachtWay content across global channels
+                  today.
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="founder-signature">
+            I do not sell boats anymore. I would not have built YachtWay without
+            first selling them.
+          </p>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">03 / 23</div>
+        </section>
+
+        <!-- SLIDE 4: Vision -->
+        <section class="slide">
+          <div class="eyebrow">VISION</div>
+          <div class="thin-rule"></div>
+          <div class="vision-top">
+            <h1 class="h1">
+              We did not build another listing site. We did not want to.
+            </h1>
+            <p class="body-text" style="margin-top:1cqw;">
+              We built the operating system the industry has been waiting for.
+              Not a place where listings live. The infrastructure where
+              transactions actually happen.
+            </p>
+          </div>
+          <div class="spacer"></div>
+          <div class="uber-block">
+            <div class="uber-glyph">&ldquo;</div>
+            <div class="uber-content">
+              <div class="uber-l1">
+                You still see yellow cabs everywhere in New York.
+              </div>
+              <div class="uber-l2">
+                But somehow, we all call the invisible Uber.
+              </div>
+              <div class="uber-l3">
+                That is the difference between legacy platforms and YachtWay.
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">04 / 23</div>
+        </section>
+
+        <!-- SLIDE 5: 46% growth -->
+        <section class="slide">
+          <div class="eyebrow">THE MARKET VOTED</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">
+            129 dealers in 60 days. Because we stopped charging them.
+          </h1>
+          <p class="muted-text" style="margin-top:1cqw;">
+            Since YachtWay flipped the switch to free listings on January 15,
+            2026. From 278 to 407 maritime professionals across 27 countries.
+          </p>
+          <div class="cols-4" style="margin-top:1.5cqw;">
+            <div class="stat-tile dark">
+              <div class="number">46%</div>
+              <div class="label">Growth in two months</div>
+            </div>
+            <div class="stat-tile paper">
+              <div class="number">129</div>
+              <div class="label">New dealers, brokers, and shipyards</div>
+            </div>
+            <div class="stat-tile paper">
+              <div class="number">407</div>
+              <div class="label">Maritime professionals on the platform</div>
+            </div>
+            <div class="stat-tile paper">
+              <div class="number">27</div>
+              <div class="label">Countries with active broker activity</div>
+            </div>
+          </div>
+          <p
+            class="italic center"
+            style="font-size:1.1cqw; margin-top:1.5cqw; color:var(--ink); font-family:var(--font-head);"
+          >
+            Brokers do not move to a platform because they are told to. They
+            move because their peers already did.
+          </p>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">05 / 23</div>
+        </section>
+
+        <!-- SLIDE 6: NEW Semrush competitive analytics -->
+        <section class="slide">
+          <div class="eyebrow">AND THE SEARCH MARKET VOTED TOO</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">YachtWay outranks the merger. Combined.</h1>
+          <p class="muted-text" style="margin-top:0.6cqw;">
+            12,200 monthly buyers reach YachtWay through search. 4,090 reach
+            Yachtr.com and MarineSource.com combined. A 3x lead, with cleaner
+            authority and healthier intent.
+          </p>
+          <table
+            style="margin-top:1cqw; width:100%; border-collapse:collapse; font-family:var(--font-body); flex:1;"
+          >
+            <thead>
+              <tr>
+                <th
+                  style="text-align:left; padding:0.85cqw 1.2cqw; background:var(--paper); font-size:0.85cqw; font-weight:700; letter-spacing:0.3em; text-transform:uppercase; color:var(--body-mute); border:1px solid var(--border); width:32%;"
+                >
+                  METRIC
+                </th>
+                <th
+                  style="padding:0.85cqw 1.2cqw; background:var(--ink); color:var(--white); font-size:1cqw; font-weight:700; letter-spacing:0.25em; text-align:center; border:1px solid var(--ink);"
+                >
+                  YACHTWAY
+                </th>
+                <th
+                  style="padding:0.85cqw 1.2cqw; background:var(--paper); font-size:0.85cqw; font-weight:700; letter-spacing:0.25em; text-align:center; color:var(--body-mute); border:1px solid var(--border);"
+                >
+                  YACHTR
+                </th>
+                <th
+                  style="padding:0.85cqw 1.2cqw; background:var(--paper); font-size:0.85cqw; font-weight:700; letter-spacing:0.25em; text-align:center; color:var(--body-mute); border:1px solid var(--border);"
+                >
+                  MARINESOURCE
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td
+                  style="padding:0.95cqw 1.2cqw; border:1px solid var(--border); font-size:1.05cqw; color:var(--body);"
+                >
+                  <div style="font-weight:700;">Monthly organic traffic</div>
+                  <div
+                    style="font-size:0.78cqw; color:var(--muted); margin-top:0.15cqw;"
+                  >
+                    United States, April 2026
+                  </div>
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--ink); color:var(--white); border:1px solid var(--ink); font-family:var(--font-head); font-size:1.8cqw; font-weight:700; text-align:center;"
+                >
+                  12,200
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; border:1px solid var(--border); font-size:1.4cqw; text-align:center; color:var(--body);"
+                >
+                  3,400
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; border:1px solid var(--border); font-size:1.4cqw; text-align:center; color:var(--body);"
+                >
+                  690
+                </td>
+              </tr>
+              <tr>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--lighter); border:1px solid var(--border); font-size:1.05cqw; color:var(--body);"
+                >
+                  <div style="font-weight:700;">Search authority rank</div>
+                  <div
+                    style="font-size:0.78cqw; color:var(--muted); margin-top:0.15cqw;"
+                  >
+                    Lower is better. Semrush global rank.
+                  </div>
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--ink); color:var(--white); border:1px solid var(--ink); font-family:var(--font-head); font-size:1.8cqw; font-weight:700; text-align:center;"
+                >
+                  150K
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--lighter); border:1px solid var(--border); font-size:1.4cqw; text-align:center; color:var(--body);"
+                >
+                  435K
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--lighter); border:1px solid var(--border); font-size:1.4cqw; text-align:center; color:var(--body);"
+                >
+                  1.4M
+                </td>
+              </tr>
+              <tr>
+                <td
+                  style="padding:0.95cqw 1.2cqw; border:1px solid var(--border); font-size:1.05cqw; color:var(--body);"
+                >
+                  <div style="font-weight:700;">Non-branded traffic share</div>
+                  <div
+                    style="font-size:0.78cqw; color:var(--muted); margin-top:0.15cqw;"
+                  >
+                    Real buyer intent, not brand recall.
+                  </div>
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--ink); color:var(--white); border:1px solid var(--ink); font-family:var(--font-head); font-size:1.8cqw; font-weight:700; text-align:center;"
+                >
+                  97.4%
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; border:1px solid var(--border); font-size:1.4cqw; text-align:center; color:var(--body);"
+                >
+                  75.5%
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; border:1px solid var(--border); font-size:1.4cqw; text-align:center; color:var(--body);"
+                >
+                  67.3%
+                </td>
+              </tr>
+              <tr>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--lighter); border:1px solid var(--border); font-size:1.05cqw; color:var(--body);"
+                >
+                  <div style="font-weight:700;">
+                    Ranks for &ldquo;yachts for sale&rdquo;
+                  </div>
+                  <div
+                    style="font-size:0.78cqw; color:var(--muted); margin-top:0.15cqw;"
+                  >
+                    27,100 monthly United States searches.
+                  </div>
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--ink); color:var(--white); border:1px solid var(--ink); font-family:var(--font-head); font-size:1.4cqw; font-weight:700; text-align:center;"
+                >
+                  Yes, page 1
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--lighter); border:1px solid var(--border); font-size:1.2cqw; text-align:center; color:var(--muted);"
+                >
+                  Not ranked
+                </td>
+                <td
+                  style="padding:0.95cqw 1.2cqw; background:var(--lighter); border:1px solid var(--border); font-size:1.2cqw; text-align:center; color:var(--muted);"
+                >
+                  Not ranked
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            style="margin-top:0.7cqw; display:flex; justify-content:space-between; align-items:flex-end; gap:1.5cqw;"
+          >
+            <p
+              style="font-size:0.95cqw; font-style:italic; color:var(--ink); font-family:var(--font-head);"
+            >
+              Brokers do not need to teach buyers what YachtWay is. The buyers
+              are already searching.
+            </p>
+            <p
+              style="font-size:0.78cqw; color:var(--muted); letter-spacing:0.18em; text-align:right; font-weight:700;"
+            >
+              SOURCE: SEMRUSH DOMAIN OVERVIEW REPORTS, APRIL 27, 2026.
+            </p>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">06 / 23</div>
+        </section>
+
+        <!-- SLIDE 7: Buyer quality lead -->
+        <section class="slide">
+          <div class="eyebrow">01 / BUYER QUALITY</div>
+          <div class="thin-rule"></div>
+          <h1 class="h2">
+            The buyers who reach a CYBA broker through YachtWay arrive
+            pre-qualified, pre-approved, and ready to transact.
+          </h1>
+          <div class="cols-2" style="margin-top:1.5cqw;">
+            <div class="card">
+              <div class="card-eyebrow">LEGACY PLATFORMS</div>
+              <div class="card-quote">
+                &ldquo;We will send you more leads.&rdquo;
+              </div>
+              <ul
+                style="list-style:none; margin-top:0.5cqw; font-size:1.1cqw; line-height:1.7; color:var(--body);"
+              >
+                <li>Buyer is a form-fill from a stock photo carousel.</li>
+                <li>Financing happens elsewhere, weeks later, if at all.</li>
+                <li>The same lead is routed to brokers across the country.</li>
+                <li>You qualify the buyer yourself, after the fact.</li>
+              </ul>
+            </div>
+            <div class="card dark">
+              <div class="card-eyebrow">YACHTWAY</div>
+              <div class="card-quote">
+                &ldquo;The buyer is ready before they reach you.&rdquo;
+              </div>
+              <ul
+                style="list-style:none; margin-top:0.5cqw; font-size:1.05cqw; line-height:1.55; color:var(--off-white);"
+              >
+                <li>Pre-approved through EasyFund before the showing.</li>
+                <li>Range-validated against real market intelligence.</li>
+                <li>
+                  Insurance pre-quoted through MasterCover, ready to bind.
+                </li>
+                <li>EasySign-ready the moment you agree on terms.</li>
+                <li>Routed only to the broker on the listing.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">07 / 23</div>
+        </section>
+
+        <!-- SLIDE 8: The operating system, 8 products -->
+        <section class="slide">
+          <div class="eyebrow">THE OPERATING SYSTEM</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">This is a story only YachtWay can tell.</h1>
+          <p class="muted-text" style="margin-top:0.6cqw;">
+            Eight integrated products, one platform. No other platform on this
+            evaluation operates more than one or two.
+          </p>
+          <div
+            style="margin-top:1cqw; flex:1; display:grid; grid-template-columns:repeat(4, 1fr); grid-template-rows:1fr 1fr; gap:0.6cqw;"
+          >
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">
+                PRE-APPROVAL
+              </div>
+              <div class="card-headline" style="font-size:1.4cqw;">
+                EasyFund
+              </div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35;"
+              >
+                Connect buyers with lenders matched to their credit profile.
+                Buyers arrive with a lender on the line.
+              </div>
+            </div>
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">
+                INSURANCE
+              </div>
+              <div class="card-headline" style="font-size:1.4cqw;">
+                MasterCover
+              </div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35;"
+              >
+                Apply, pay, and bind in one place. $100K to $300M coverage.
+                Lloyd&rsquo;s of London partner network.
+              </div>
+            </div>
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">
+                DIGITAL CLOSE
+              </div>
+              <div class="card-headline" style="font-size:1.4cqw;">
+                EasySign
+              </div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35;"
+              >
+                Yacht purchase and listing agreements ready to send, sign, and
+                track. Powered by DocuSign.
+              </div>
+            </div>
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">
+                LIVE BROADCAST
+              </div>
+              <div class="card-headline" style="font-size:1.4cqw;">
+                YachtWay LIVE
+              </div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35;"
+              >
+                First-ever live yacht showings on a listing platform. One
+                showing, one hundred buyers, tap to join.
+              </div>
+            </div>
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">
+                CONTENT ENGINE
+              </div>
+              <div class="card-headline" style="font-size:1.4cqw;">Studio</div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35;"
+              >
+                Cinematic content built for the YachtWay audience. The reason
+                listings get watched, not just seen.
+              </div>
+            </div>
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">PLATFORM</div>
+              <div class="card-headline" style="font-size:1.4cqw;">VATO</div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35; font-style:italic; color:var(--muted);"
+              >
+                [ Description awaiting Heigo&rsquo;s input. ]
+              </div>
+            </div>
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">PLATFORM</div>
+              <div class="card-headline" style="font-size:1.4cqw;">NautiX</div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35; font-style:italic; color:var(--muted);"
+              >
+                [ Description awaiting Heigo&rsquo;s input. ]
+              </div>
+            </div>
+            <div
+              class="card outlined"
+              style="padding:1cqw 1.1cqw; gap:0.25cqw;"
+            >
+              <div class="card-eyebrow" style="font-size:0.7cqw;">PLATFORM</div>
+              <div class="card-headline" style="font-size:1.4cqw;">Waylo</div>
+              <div
+                class="card-body"
+                style="font-size:0.85cqw; line-height:1.35; font-style:italic; color:var(--muted);"
+              >
+                [ Description awaiting Heigo&rsquo;s input. ]
+              </div>
+            </div>
+          </div>
+          <p
+            style="margin-top:0.7cqw; font-style:italic; text-align:center; font-size:1cqw; color:var(--ink); font-family:var(--font-head);"
+          >
+            Eight products. One platform. The integration is the difference.
+          </p>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">08 / 23</div>
+        </section>
+
+        <!-- SLIDE 8: MasterCover -->
+        <section class="slide">
+          <div class="eyebrow">02 / MASTERCOVER</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">The first global digital yacht insurance solution.</h1>
+          <p class="body-text" style="margin-top:0.8cqw;">
+            Apply, pay, and bind in one place, instantly, from anywhere in the
+            world. YachtWay connects yacht owners with insurance partners
+            through a global network including A-rated underwriters and Lloyd's
+            of London underwriters.
+          </p>
+          <div class="coverage-band" style="margin-top:1.2cqw;">
+            <div class="cb-eyebrow">COVERAGE RANGE</div>
+            <div class="cb-range">
+              <div class="cb-num">$100,000</div>
+              <div class="cb-arrow">&rarr;</div>
+              <div class="cb-num italic">$300,000,000</div>
+            </div>
+            <div class="cb-cap">Any vessel. Any owner. Any port.</div>
+          </div>
+          <div class="cols-3" style="margin-top:1.2cqw;">
+            <div class="card">
+              <div class="card-eyebrow">INSTANT</div>
+              <div class="card-headline" style="font-size:1.4cqw;">
+                Bound in minutes
+              </div>
+              <div class="card-body" style="font-size:1cqw;">
+                Quote, payment, and binding all happen on the platform. No phone
+                tag.
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-eyebrow">GLOBAL</div>
+              <div class="card-headline" style="font-size:1.4cqw;">
+                From anywhere
+              </div>
+              <div class="card-body" style="font-size:1cqw;">
+                International buyers and brokers handled in one consistent flow.
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-eyebrow">INSTITUTIONAL</div>
+              <div class="card-headline" style="font-size:1.4cqw;">
+                Lloyd's of London
+              </div>
+              <div class="card-body" style="font-size:1cqw;">
+                A-rated underwriters and Lloyd's of London underwriters in the
+                partner network.
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">09 / 23</div>
+        </section>
+
+        <!-- SLIDE 9: YachtWay LIVE -->
+        <section class="slide dark">
+          <div class="eyebrow">03 / YACHTWAY LIVE</div>
+          <div
+            style="display:grid; grid-template-columns:1.4fr 1fr; gap:2cqw; flex:1; margin-top:1.5cqw;"
+          >
+            <div>
+              <div class="h1" style="font-size:5cqw; line-height:1.1;">
+                One showing.<br />One hundred buyers.<br />Tap to join.
+              </div>
+              <p class="body-text" style="margin-top:1.5cqw; font-size:1.2cqw;">
+                YachtWay LIVE replaces the calendar grind of one-to-one showings
+                with a single broadcast viewed by qualified buyers across the
+                globe. The broker stays on camera. The platform brings the
+                audience.
+              </p>
+              <p
+                class="body-text"
+                style="margin-top:1cqw; font-size:1.1cqw; font-style:italic; color:var(--white);"
+              >
+                A catalog of 3,900 videos. The audience is not just large. It is
+                the most engaged in the category.
+              </p>
+            </div>
+            <div
+              style="display:flex; flex-direction:column; justify-content:center;"
+            >
+              <div class="live-stat">
+                <div class="ls-num">500K+</div>
+                <div class="ls-label">
+                  YouTube subscribers across the YachtWay Hub
+                </div>
+              </div>
+              <div class="live-stat">
+                <div class="ls-num">100M+</div>
+                <div class="ls-label">Total video views across the catalog</div>
+              </div>
+              <div class="live-stat">
+                <div class="ls-num">5%</div>
+                <div class="ls-label">
+                  Engagement rate. Two to five times the boating sector average
+                  of 1 to 3 percent.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">10 / 23</div>
+        </section>
+
+        <!-- SLIDE 10: Broker economics -->
+        <section class="slide">
+          <div class="eyebrow">04 / BROKER ECONOMICS</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">
+            Every other platform charges your members and gives nothing back.
+          </h1>
+          <p class="muted-text" style="margin-top:0.8cqw;">
+            YachtWay was designed with the inverse structure. The platform earns
+            when the broker earns.
+          </p>
+          <div
+            style="margin-top:1.5cqw; display:flex; flex-direction:column; gap:0.5cqw;"
+          >
+            <div class="numbered-row">
+              <div class="row-num">1</div>
+              <div class="row-content">
+                <div class="row-h">0.5% on every funded EasyFund loan</div>
+                <div class="row-b">
+                  On a 1,000,000 dollar yacht loan, that is 5,000 dollars to the
+                  broker on the listing. A loan that originated through your
+                  buyer pays you, not a third party.
+                </div>
+              </div>
+            </div>
+            <div class="numbered-row">
+              <div class="row-num">2</div>
+              <div class="row-content">
+                <div class="row-h">MasterCover insurance attachment</div>
+                <div class="row-b">
+                  100 dollars in platform credit per 10,000 dollars in policy
+                  value. Every insurance policy bound on your boat returns value
+                  to you.
+                </div>
+              </div>
+            </div>
+            <div class="numbered-row">
+              <div class="row-num">3</div>
+              <div class="row-content">
+                <div class="row-h">
+                  Listing fee structure that does not compete with your
+                  commission
+                </div>
+                <div class="row-b">
+                  Listings are free as of January 15, 2026. The platform does
+                  not extract from the same dollar your commission comes from.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">11 / 23</div>
+        </section>
+
+        <!-- SLIDE 11: Earnings table -->
+        <section class="slide">
+          <div class="eyebrow">04 / BROKER ECONOMICS</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">What 0.5% on a funded loan actually looks like.</h1>
+          <p class="muted-text" style="margin-top:0.8cqw;">
+            Real revenue per closed loan, paid out of the lender reserve
+            YachtWay receives from Shore Premier Finance, a Centennial Bank.
+          </p>
+          <table class="earnings" style="margin-top:1.2cqw;">
+            <thead>
+              <tr>
+                <th>LOAN SIZE</th>
+                <th>BROKER REFERRAL (0.5%)</th>
+                <th>PER 5 LOANS / YEAR</th>
+                <th>PER 10 LOANS / YEAR</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-loan">$500,000</td>
+                <td class="col-ref">$2,500</td>
+                <td>$12,500</td>
+                <td>$25,000</td>
+              </tr>
+              <tr>
+                <td class="col-loan">$1,000,000</td>
+                <td class="col-ref">$5,000</td>
+                <td>$25,000</td>
+                <td>$50,000</td>
+              </tr>
+              <tr>
+                <td class="col-loan">$2,000,000</td>
+                <td class="col-ref">$10,000</td>
+                <td>$50,000</td>
+                <td>$100,000</td>
+              </tr>
+              <tr>
+                <td class="col-loan">$3,000,000</td>
+                <td class="col-ref">$15,000</td>
+                <td>$75,000</td>
+                <td>$150,000</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="spacer"></div>
+          <div class="closing-band italic">
+            Bundle in MasterCover and the same buyer pays you twice. 100 dollars
+            in platform credit per 10,000 dollars of bound policy.
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">12 / 23</div>
+        </section>
+
+        <!-- SLIDE 12: The silent killer -->
+        <section class="slide dark silent-killer">
+          <div class="eyebrow">05 / BROKER VISIBILITY</div>
+          <div class="h-killer">The silent killer.</div>
+          <div class="stack">
+            <div class="stack-line">
+              Brokers feel it but rarely articulate it.
+            </div>
+            <div class="stack-line">
+              Legacy platforms do not commoditize you accidentally.
+            </div>
+            <div class="stack-line">
+              They do it on purpose, because their economics depend on it.
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div class="quote-band">
+            YachtWay was designed with one rule in mind. The buyer found the
+            boat because of the broker. Our job is to make that visible, not to
+            bury it.
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">13 / 23</div>
+        </section>
+
+        <!-- SLIDE 13: Four ways -->
+        <section class="slide">
+          <div class="eyebrow">05 / BROKER VISIBILITY</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1" style="font-size:2.5cqw;">
+            Four ways legacy platforms quietly erode your members.
+          </h1>
+          <div class="four-grid" style="margin-top:1.2cqw;">
+            <div class="four-card">
+              <div class="fc-num">01</div>
+              <div class="fc-h">Similar boat comparison</div>
+              <div class="fc-b">
+                The buyer lands on a CYBA broker's listing and the page
+                recommends nine alternatives from other brokers. Your member's
+                listing becomes a search bar.
+              </div>
+            </div>
+            <div class="four-card">
+              <div class="fc-num">02</div>
+              <div class="fc-h">Lead distribution to brokers nationwide</div>
+              <div class="fc-b">
+                A buyer asks about a 65-foot Ferretti and the platform fans the
+                inquiry out to brokers in three states. Your members compete
+                with strangers for their own listings.
+              </div>
+            </div>
+            <div class="four-card">
+              <div class="fc-num">03</div>
+              <div class="fc-h">
+                Dealer profiles and broker profiles invisible by design
+              </div>
+              <div class="fc-b">
+                Legacy platforms prefer their brand on the showroom. We prefer
+                the broker's. YachtWay puts a face, a name, and a story on every
+                dealer and broker.
+              </div>
+            </div>
+            <div class="four-card">
+              <div class="fc-num">04</div>
+              <div class="fc-h">Other dealers placed on your inventory</div>
+              <div class="fc-b">
+                Legacy platforms run paid placements that promote a competitor
+                on your member's real estate. Your member paid to list. The
+                competitor paid to outrank.
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">14 / 23</div>
+        </section>
+
+        <!-- SLIDE 14: Google duplicate -->
+        <section class="slide">
+          <div class="eyebrow">05 / BROKER VISIBILITY</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">Google does not forgive duplicate content.</h1>
+          <p class="body-text" style="margin-top:1cqw;">
+            When a CYBA broker's listing is syndicated to fifteen platforms,
+            Google picks one canonical version and suppresses the rest. The
+            suppressed versions do not rank, do not get indexed properly, and
+            drag down domain quality across the board.
+          </p>
+          <div class="big-duo" style="margin-top:1.2cqw;">
+            <div>
+              <div class="big-num">80,000</div>
+              <div class="big-cap">
+                Listings ingested by a feed-aggregator platform.
+              </div>
+            </div>
+            <div class="big-arrow">&rarr;</div>
+            <div>
+              <div class="big-num italic">~5,000</div>
+              <div class="big-cap">Pages that actually rank.</div>
+              <div class="big-cap muted">
+                The remaining 75,000 are crawl budget waste and index bloat.
+                They do not bring your members a buyer.
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">15 / 23</div>
+        </section>
+
+        <!-- SLIDE 15: 650% case study -->
+        <section class="slide">
+          <div class="eyebrow">
+            WHAT IT COSTS TO ADVERTISE YOUR OWN INVENTORY
+          </div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">650 percent in five years.</h1>
+          <p class="muted-text" style="margin-top:0.6cqw;">
+            One California brokerage. One legacy MLS. Five years of compounding
+            annual increases.
+          </p>
+          <div
+            style="display:grid; grid-template-columns:1.6fr 1fr; gap:1.2cqw; margin-top:1cqw; flex:1; min-height:0;"
+          >
+            <div
+              style="border-left:1px solid var(--border); border-bottom:1px solid var(--border); padding:1.5cqw 0.5cqw 0;"
+            >
+              <div class="bar-chart">
+                <div class="bar">
+                  <div class="bar-fill" style="height:11%;">
+                    <div class="bar-value">$14,958</div>
+                  </div>
+                  <div class="bar-label">2019</div>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height:22%;">
+                    <div class="bar-value">$30,531</div>
+                  </div>
+                  <div class="bar-label">2020</div>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height:32%;">
+                    <div class="bar-value">$44,097</div>
+                  </div>
+                  <div class="bar-label">2021</div>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height:65%;">
+                    <div class="bar-value">$90,846</div>
+                  </div>
+                  <div class="bar-label">2022</div>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height:84%;">
+                    <div class="bar-value">$117,753</div>
+                  </div>
+                  <div class="bar-label">2023</div>
+                </div>
+                <div class="bar">
+                  <div class="bar-fill" style="height:80%;">
+                    <div class="bar-value">$112,536</div>
+                  </div>
+                  <div class="bar-label">2024</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.8cqw;">
+              <div
+                style="background:var(--ink); color:var(--white); padding:1.2cqw 1.4cqw;"
+              >
+                <div
+                  style="font-family:var(--font-head); font-size:1.8cqw; font-weight:700; color:var(--muted);"
+                >
+                  $14,958
+                </div>
+                <div
+                  style="font-size:0.9cqw; color:var(--muted); margin-top:0.2cqw;"
+                >
+                  Year one. 2019.
+                </div>
+                <div
+                  style="font-family:var(--font-head); font-size:1.8cqw; font-weight:700; font-style:italic; color:var(--white); margin-top:0.4cqw;"
+                >
+                  $112,536
+                </div>
+                <div
+                  style="font-size:0.9cqw; color:var(--muted); margin-top:0.2cqw;"
+                >
+                  Year five. 2024.
+                </div>
+              </div>
+              <div
+                style="background:var(--paper); padding:1.2cqw 1.4cqw; flex:1;"
+              >
+                <div
+                  style="font-size:0.85cqw; font-weight:700; letter-spacing:0.4em; color:var(--body-mute);"
+                >
+                  THE 2026 NEGOTIATION
+                </div>
+                <div
+                  style="font-size:1cqw; line-height:1.4; color:var(--body); margin-top:0.6cqw;"
+                >
+                  8 percent increase requested by the broker.
+                </div>
+                <div
+                  style="font-size:1cqw; line-height:1.4; color:var(--body); margin-top:0.4cqw;"
+                >
+                  Up to 56 percent counter-proposed by the legacy platform.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="closing-band" style="margin-top:0.8cqw;">
+            YachtWay listings are free. Forever.
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">16 / 23</div>
+        </section>
+
+        <!-- SLIDE 16: Curation -->
+        <section class="slide">
+          <div class="eyebrow">06 / CATALOG QUALITY</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">We did not race to inflate the catalog.</h1>
+          <p class="muted-text" style="margin-top:0.6cqw;">
+            Feed intake without curation is product debt. It compounds. We built
+            the curated foundation first.
+          </p>
+          <div class="cols-3" style="margin-top:1.2cqw;">
+            <div class="curation-tile paper">
+              <div class="ct-num">&lt;3,000</div>
+              <div class="ct-label">
+                Listings on the platform.<br />Every one is curated.
+              </div>
+            </div>
+            <div class="curation-tile dark">
+              <div class="ct-num">#2</div>
+              <div class="ct-label">
+                Google rank for<br />&ldquo;yachts for sale Miami.&rdquo;
+              </div>
+            </div>
+            <div class="curation-tile paper">
+              <div class="ct-num">70+</div>
+              <div class="ct-label">
+                Listing quality score required<br />to surface in search.
+              </div>
+            </div>
+          </div>
+          <div class="curation-closer">
+            YachtWay is the only platform with the engineering discipline to
+            ingest feeds without turning the catalog into duplicate content
+            debt. ML image recognition scores every listing. Anything below 70
+            does not surface.
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">17 / 23</div>
+        </section>
+
+        <!-- SLIDE 17: Trust -->
+        <section class="slide">
+          <div class="eyebrow">07 / TRUST INFRASTRUCTURE</div>
+          <div class="thin-rule"></div>
+          <h1 class="h2">
+            The only platform you can hand a high-net-worth buyer to without a
+            second thought.
+          </h1>
+          <div class="cols-3" style="margin-top:1.5cqw;">
+            <div class="cert-card">
+              <div class="cert-tag">SOC 2</div>
+              <div class="cert-body">
+                Certified over a year ago in anticipation of institutional
+                partnerships. Bank-grade security verification, not a checkbox.
+              </div>
+            </div>
+            <div class="cert-card">
+              <div class="cert-tag">GDPR</div>
+              <div class="cert-body">
+                Full compliance for European buyers and EU broker activity. Data
+                subject rights, lawful basis, the whole framework.
+              </div>
+            </div>
+            <div class="cert-card">
+              <div class="cert-tag">CCPA</div>
+              <div class="cert-body">
+                California Consumer Privacy Act compliance. Buyer data is
+                treated as the buyer's property, not the platform's asset.
+              </div>
+            </div>
+          </div>
+          <p
+            class="italic center"
+            style="font-size:1.1cqw; margin-top:1.2cqw; color:var(--body-mute);"
+          >
+            Legacy platforms cannot say this. Retrofit is not the same as
+            foundation.
+          </p>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">18 / 23</div>
+        </section>
+
+        <!-- SLIDE 18: Wells Fargo California -->
+        <section class="slide">
+          <div class="eyebrow">08 / THE WELLS FARGO PROGRAM</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">
+            California concentrates more wealth than any other state.
+          </h1>
+          <p class="body-text" style="margin-top:0.8cqw;">
+            Your members lose deals every year to buyers who refuse to liquidate
+            stock positions to fund a yacht. We solved that.
+          </p>
+          <div class="cols-50-50" style="margin-top:1.2cqw;">
+            <div class="split-light">
+              <div class="split-eyebrow">HOW IT WORKS</div>
+              <div class="steps-list" style="margin-top:0.5cqw;">
+                <div class="step-item">
+                  <span class="step-tag">01.</span
+                  ><span
+                    >Buyer collateralizes 2,500,000 dollars in stocks or
+                    bonds.</span
+                  >
+                </div>
+                <div class="step-item">
+                  <span class="step-tag">02.</span
+                  ><span
+                    >Wells Fargo issues a yacht purchase line against the
+                    portfolio.</span
+                  >
+                </div>
+                <div class="step-item">
+                  <span class="step-tag">03.</span
+                  ><span
+                    >No assets are sold. No capital gains tax is
+                    triggered.</span
+                  >
+                </div>
+                <div class="step-item">
+                  <span class="step-tag">04.</span
+                  ><span
+                    >Wells Fargo manages the portfolio at a 1 percent annual
+                    fee.</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="split-dark">
+              <div class="split-eyebrow">WHY CALIFORNIA NEEDS THIS</div>
+              <div class="split-h">Closes the buyer who would have walked.</div>
+              <div class="split-b">
+                California holds the largest concentration of high-net-worth
+                buyers in the United States. Many of them refuse to liquidate
+                appreciated positions to fund a discretionary purchase. No other
+                yachting platform offers a path to keep the portfolio intact.
+              </div>
+              <div class="split-footer">
+                In final due diligence with Wells Fargo as of April 2026.
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">19 / 23</div>
+        </section>
+
+        <!-- SLIDE 19: California broker placeholder -->
+        <section class="slide">
+          <div class="eyebrow">09 / VOICES FROM THE FIELD</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">A California broker, on the record.</h1>
+          <div class="quote-block" style="margin-top:1.5cqw;">
+            <div class="quote-glyph">&ldquo;</div>
+            <div class="quote-text">
+              [ California broker quote to be added by Day 5. The slide is sized
+              for two to three sentences plus attribution. Heigo to source the
+              quote from a CYBA-region broker already on the YachtWay platform.
+              ]
+            </div>
+            <div class="quote-attr">[ Broker name, brokerage, city. ]</div>
+          </div>
+          <div class="placeholder-note">
+            PLACEHOLDER. Replace with quote and attribution before the call.
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">20 / 23</div>
+        </section>
+
+        <!-- SLIDE 20: Italy precedent -->
+        <section class="slide">
+          <div class="eyebrow">10 / PRECEDENT</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">Italy already chose.</h1>
+          <h2 class="h2 italic" style="margin-top:0.4cqw; color:var(--body);">
+            CYBA is being asked to be the second.
+          </h2>
+          <div class="cols-50-50" style="margin-top:1.5cqw;">
+            <div class="split-light">
+              <div class="split-eyebrow">THE ISYBA PARTNERSHIP</div>
+              <div class="split-h">
+                YachtWay is now the preferred yacht listing platform of the
+                Italian Ship and Yacht Brokers Association.
+              </div>
+              <div class="split-b">
+                From March 1, 2026, brokers must upload licenses to list
+                pre-owned vessels on YachtWay in Italy. The standard mirrors
+                California's broker licensing requirements. The two markets
+                share the same professional foundation.
+              </div>
+            </div>
+            <div class="split-dark">
+              <div class="split-eyebrow">
+                WHY CALIFORNIA IS THE NATURAL NEXT
+              </div>
+              <div class="split-h">
+                Italy and California are the two markets in the world that
+                mandate broker licensing.
+              </div>
+              <div class="split-b">
+                YachtWay enforces license verification on the platform. The
+                infrastructure that elevates standards in Italy is ready to
+                elevate them in California. CYBA can lead the United States the
+                way ISYBA led Europe.
+              </div>
+            </div>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">21 / 23</div>
+        </section>
+
+        <!-- SLIDE 22: The field, diplomatic reframing -->
+        <section class="slide">
+          <div class="eyebrow">11 / THE FIELD</div>
+          <div class="thin-rule"></div>
+          <h1 class="h1">
+            Every board member here has a preferred platform. We respect that.
+          </h1>
+          <p class="muted-text" style="margin-top:0.6cqw;">
+            We are not here to ask this board to pick favorites. We are here to
+            articulate where technology is moving, and what an industry that
+            integrates rather than aggregates actually looks like.
+          </p>
+          <div
+            style="margin-top:1cqw; flex:1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8cqw;"
+          >
+            <div class="card" style="padding:1.4cqw 1.5cqw; gap:0.6cqw;">
+              <div class="card-eyebrow" style="font-size:0.85cqw;">01</div>
+              <div
+                class="card-headline"
+                style="font-size:1.4cqw; line-height:1.2;"
+              >
+                The future is integration, not aggregation.
+              </div>
+              <div
+                class="card-body"
+                style="font-size:0.95cqw; line-height:1.4;"
+              >
+                Buyers do not want to bounce between a listing site, a financing
+                application, an insurance quote, and a contract tool. Brokers do
+                not either. The platforms that win the next decade fold all of
+                it into one place.
+              </div>
+            </div>
+            <div class="card" style="padding:1.4cqw 1.5cqw; gap:0.6cqw;">
+              <div class="card-eyebrow" style="font-size:0.85cqw;">02</div>
+              <div
+                class="card-headline"
+                style="font-size:1.4cqw; line-height:1.2;"
+              >
+                Technology is moving toward systems, not products.
+              </div>
+              <div
+                class="card-body"
+                style="font-size:0.95cqw; line-height:1.4;"
+              >
+                A listing platform without fintech, without a compliance layer,
+                and without transaction infrastructure is a feature. An
+                operating system is a different category entirely.
+              </div>
+            </div>
+            <div class="card" style="padding:1.4cqw 1.5cqw; gap:0.6cqw;">
+              <div class="card-eyebrow" style="font-size:0.85cqw;">03</div>
+              <div
+                class="card-headline"
+                style="font-size:1.4cqw; line-height:1.2;"
+              >
+                The ability to keep building is the only durable advantage.
+              </div>
+              <div
+                class="card-body"
+                style="font-size:0.95cqw; line-height:1.4;"
+              >
+                A platform that ships one product per quarter is not the same as
+                a platform that ships one feature per week. CYBA needs a partner
+                that grows alongside its members, not one that asks members to
+                wait for a roadmap.
+              </div>
+            </div>
+          </div>
+          <div
+            style="margin-top:0.8cqw; padding:1cqw 1.5cqw; background:var(--ink); color:var(--white);"
+          >
+            <p
+              style="font-family:var(--font-head); font-size:1.3cqw; font-weight:700; font-style:italic; line-height:1.3;"
+            >
+              YachtWay is not asking to replace your favorite tool. We are
+              asking to be the system that makes every tool you have work
+              harder.
+            </p>
+          </div>
+          <div class="brand-mark">YACHTWAY</div>
+          <div class="page-number">22 / 23</div>
+        </section>
+
+        <!-- SLIDE 22: The path -->
+        <section class="slide dark">
+          <div class="eyebrow">THE PATH</div>
+          <h1
+            class="h1"
+            style="font-size:3.2cqw; margin-top:1.5cqw; color:var(--white);"
+          >
+            A 90-day pilot.<br />Designation as the follow-up vote.
+          </h1>
+          <div class="cols-3" style="margin-top:1.5cqw;">
+            <div class="step-card">
+              <div class="step-num">1</div>
+              <div class="step-h">Pilot launch (Days 1 to 7)</div>
+              <div class="step-b">
+                CYBA designates YachtWay as the pilot MLS. We onboard a cohort
+                of member brokerages with three months of free broker seats and
+                a co-branded launch event.
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-num">2</div>
+              <div class="step-h">Measure (Days 8 to 90)</div>
+              <div class="step-b">
+                Success criteria the board sets at Day 1: listings live,
+                qualified leads delivered, EasyFund applications, MasterCover
+                policies bound, member satisfaction.
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-num">3</div>
+              <div class="step-h">Designation vote (Day 91)</div>
+              <div class="step-b">
+                If the pilot meets the criteria the board set at Day 1, CYBA
+                votes on full official MLS designation with the data on the
+                table.
+              </div>
+            </div>
+          </div>
+          <p
+            class="italic center"
+            style="font-size:1.2cqw; margin-top:1.5cqw; color:var(--white); font-family:var(--font-head);"
+          >
+            Lower the threshold for yes. Let the data on Day 91 deliver the
+            designation.
+          </p>
+          <p
+            class="center"
+            style="font-size:1cqw; margin-top:0.8cqw; color:var(--muted);"
+          >
+            YachtWay.com | Heigo, Founder &amp; CEO | Miami
+          </p>
+          <div class="page-number">23 / 23</div>
+        </section>
+      </div>
+    </div>
+    <nav class="controls">
+      <button class="prev" aria-label="Previous slide">&lsaquo;</button>
+      <span class="counter"><span class="cur">01</span> / 23</span>
+      <button class="next" aria-label="Next slide">&rsaquo;</button>
+    </nav>
+    <script>
+      (function() {
+        const slides = document.querySelectorAll('.slide');
+        let cur = 0;
+        function show(i) {
+          slides.forEach(s => s.classList.remove('active'));
+          slides[i].classList.add('active');
+          document.querySelector('.cur').textContent = String(i + 1).padStart(2, '0');
+        }
+        function next() { if (cur < slides.length - 1) { cur++; show(cur); } }
+        function prev() { if (cur > 0) { cur--; show(cur); } }
+        document.querySelector('.next').addEventListener('click', next);
+        document.querySelector('.prev').addEventListener('click', prev);
+        document.addEventListener('keydown', e => {
+          if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+          else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+          else if (e.key === 'Home') { cur = 0; show(0); }
+          else if (e.key === 'End') { cur = slides.length - 1; show(cur); }
+        });
+      })();
+    </script>
+  </body>
+</html>
